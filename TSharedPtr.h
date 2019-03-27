@@ -49,11 +49,11 @@ public:
     }
 
     bool isValid() const {
-        return Storage != nullptr;
+        return refCounter != nullptr;
     }
 
     int use_count() const {
-        if (refCounter != nullptr) {
+        if (isValid()) {
             return *refCounter;
         } else {
             return 0;
@@ -61,10 +61,12 @@ public:
     }
 
     TSharedPtr &operator=(const TSharedPtr &p) {
-        (*p.refCounter)++;
         free();
         Storage = p.Storage;
         refCounter = p.refCounter;
+        if (isValid()) {
+            (*refCounter)++;
+        }
         return *this;
     }
 

@@ -42,9 +42,16 @@ int main()
         std::cout << sh3.use_count() << '\n';
         std::cout << sh4.use_count() << '\n';
         std::cout << sh5.use_count() << '\n';
+
         std::cout << sh6.use_count() << '\n';
         std::cout << sh7.use_count() << '\n';
         std::cout << sh8.use_count() << '\n';
+
+        TSharedPtr<int> sh9(new int(1));
+        TSharedPtr<int> sh10;
+        sh9 = sh10;
+        std::cout << sh9.use_count() << '\n';
+        std::cout << sh10.use_count() << '\n';
     }
 
     /*{
