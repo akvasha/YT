@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+message Message1 {
+    string s1 = 1;
+    string s2 = 2;
+    string s3 = 3;
+    string s4 = 4;
+    string s5 = 5;
+    int64 int1 = 6;
+    int64 int2 = 7;
+    int64 int3 = 8;
+    int64 int4 = 9;
+    int64 int5 = 10;
+}
+
+message Message2 {
+    message SubMessage1 {
+        string s1 = 1;
+        string s2 = 2;
+        string s3 = 3;
+        string s4 = 4;
+        string s5 = 5;
+    }
+    message SubMessage2 {
+        int64 int1 = 6;
+        int64 int2 = 7;
+        int64 int3 = 8;
+        int64 int4 = 9;
+        int64 int5 = 10;
+    }
+}
+
+message Message3 {
+    repeated string str = 1;
+    repeated int64 int_val = 2;
+}
+
+message SubMessage {
+    string str = 1;
+    int64 int_val = 2;
+}
+
+message Message4 {
+    repeated SubMessage subMsg = 1;
+}

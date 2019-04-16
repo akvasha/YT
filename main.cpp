@@ -1,6 +1,8 @@
 #include <memory>
 #include <iostream>
 #include "TSharedPtr.h"
+#include "Protobuf.h"
+#include <folly/futures/Future.h>
 
 struct Foo {
     Foo() { std::cout << "Foo...\n"; }
