@@ -60,6 +60,10 @@ public:
         }
     }
 
+    T *get() const {
+        return Storage;
+    }
+
     TSharedPtr &operator=(const TSharedPtr &p) {
         free();
         Storage = p.Storage;
