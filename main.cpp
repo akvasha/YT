@@ -85,7 +85,7 @@ TEST(ConstructorWithObject, AssigmentEmpty) {
 
 int main(int argc, char *argv[])
 {
-    work2();
+    processMain(3, 4, 40);
     /*::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();*/
 }
