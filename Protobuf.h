@@ -20,38 +20,25 @@ std::random_device rd;
 std::mt19937 rnd(rd());
 
 template <typename Message>
-folly::Future<std::string> Serialize(std::shared_ptr<Message> message) {
+folly::Future<std::string> Serialize(TSharedPtr<Message> message) {
     std::string result;
     message->SerializeToString(&result);
     return folly::makeFuture(result);
 }
 
 template <typename Message>
-folly::Future<std::shared_ptr<Message>> Deserialize(std::string &message) {
+folly::Future<TSharedPtr<Message>> Deserialize(std::string &message) {
     Message result;
     result.ParseFromString(message);
-    return folly::makeFuture(std::make_shared<Message>(result));
+    return folly::makeFuture(MakeShared<Message>(result));
 }
-
-/*void process(int i) {
-    printf("Kek! %d\n", i);
-    sleep(1);
-}
-
-void work() {
-    auto executor = std::make_unique<folly::CPUThreadPoolExecutor>(4);
-    std::vector<folly::Future<folly::Unit>> futs;
-    for (int i = 0; i < 40; ++i) {
-        futs.emplace_back(folly::via(executor.get(), [i]() { process(i); }));
-    }
-    folly::collectAll(futs).get();
-    printf("Done.\n");
-}*/
 
 template <typename Message>
 void processMessageType(Message msg, int workers, int executions) {
+    std::chrono::time_point<std::chrono::system_clock> stime, etime;
+    stime = std::chrono::system_clock::now();
     auto executor = folly::CPUThreadPoolExecutor(workers);
-    auto ptr = std::make_shared<Message>(msg);
+    auto ptr = MakeShared<Message>(msg);
     std::vector<folly::Future<std::string>> futs;
     for (int i = 0; i < executions; ++i) {
         futs.emplace_back(folly::via(&executor, [ptr]() {
@@ -59,13 +46,16 @@ void processMessageType(Message msg, int workers, int executions) {
         }));
     }
     folly::Future<std::vector<std::string>> resultSerialization = folly::collect(futs).get();
-    std::vector<folly::Future<std::shared_ptr<Message>>> output;
+    std::vector<folly::Future<TSharedPtr<Message>>> output;
     for (int i = 0; i < executions; ++i) {
         output.emplace_back(folly::via(&executor, [&resultSerialization, i]() {
             return Deserialize<Message>(resultSerialization.value()[i]);
         }));
     }
-    folly::Future<std::vector<std::shared_ptr<Message>>> resultDeserialization = folly::collect(output).get();
+    folly::Future<std::vector<TSharedPtr<Message>>> resultDeserialization = folly::collect(output).get();
+    etime = std::chrono::system_clock::now();
+    double execution_time = static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(etime - stime).count()) / 1000; //counted in seconds
+    std::cout << execution_time << std::endl;
 }
 
 std::string createString() {

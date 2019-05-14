@@ -5,10 +5,12 @@
 #ifndef YT_TSHAREDPTR_H
 #define YT_TSHAREDPTR_H
 
+#include <atomic>
+
 template <class T>
 class TSharedPtr {
 private:
-    int *refCounter;
+    std::atomic<int *> refCounter;
     T *Storage;
 
 public:
@@ -18,22 +20,13 @@ public:
 
     TSharedPtr(const TSharedPtr &p) : refCounter(nullptr), Storage(nullptr) {
         if (p.isValid()) {
-            refCounter = p.refCounter;
+            refCounter = p.refCounter.load();
             Storage = p.Storage;
             (*refCounter)++;
         }
     }
 
     void free() {
-        /*if (isValid()) {
-            (*refCounter)--;
-            if (*refCounter == 0) {
-                delete refCounter;
-                delete Storage;
-            }
-            refCounter = nullptr;
-            Storage = nullptr;
-        }*/
         if (Storage && --(*refCounter) == 0) {
             delete Storage;
             delete refCounter;
@@ -67,7 +60,7 @@ public:
     TSharedPtr &operator=(const TSharedPtr &p) {
         free();
         Storage = p.Storage;
-        refCounter = p.refCounter;
+        refCounter = p.refCounter.load();
         if (isValid()) {
             (*refCounter)++;
         }
