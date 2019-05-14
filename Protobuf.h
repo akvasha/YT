@@ -28,9 +28,9 @@ folly::Future<std::string> Serialize(TSharedPtr<Message> message) {
 
 template <typename Message>
 folly::Future<TSharedPtr<Message>> Deserialize(std::string &message) {
-    Message result;
-    result.ParseFromString(message);
-    return folly::makeFuture(MakeShared<Message>(result));
+    TSharedPtr<Message> result = MakeShared<Message>();
+    result->ParseFromString(message);
+    return folly::makeFuture(result);
 }
 
 template <typename Message>

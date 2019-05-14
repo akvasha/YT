@@ -6,35 +6,35 @@
 #define YT_TSHAREDPTR_H
 
 #include <atomic>
+#include <thread>
+#include <mutex>
 
 template <class T>
 class TSharedPtr {
 private:
-    std::atomic<int *> refCounter;
+    std::atomic<int> *refCounter;
     T *Storage;
 
 public:
     TSharedPtr () : refCounter(nullptr), Storage(nullptr) {}
 
-    explicit TSharedPtr(T *p) : refCounter(new int(1)), Storage(p) {}
+    explicit TSharedPtr(T *p) : refCounter(new std::atomic<int>(1)), Storage(p) {}
 
     TSharedPtr(const TSharedPtr &p) : refCounter(nullptr), Storage(nullptr) {
-        if (p.isValid()) {
-            refCounter = p.refCounter.load();
-            Storage = p.Storage;
+        refCounter = p.refCounter;
+        if (isValid()) {
             (*refCounter)++;
         }
+        Storage = p.Storage;
     }
 
     void free() {
-        if (Storage && --(*refCounter) == 0) {
+        if (--(*refCounter) == 0) {
             delete Storage;
             delete refCounter;
-        } else if (!Storage) {
-            delete refCounter;
+            Storage = nullptr;
+            refCounter = nullptr;
         }
-        Storage = nullptr;
-        refCounter = nullptr;
     }
 
     ~TSharedPtr() {
@@ -58,11 +58,13 @@ public:
     }
 
     TSharedPtr &operator=(const TSharedPtr &p) {
-        free();
-        Storage = p.Storage;
-        refCounter = p.refCounter.load();
-        if (isValid()) {
-            (*refCounter)++;
+        if (this != &p) {
+            free();
+            refCounter = p.refCounter;
+            if (isValid()) {
+                (*refCounter)++;
+            }
+            Storage = p.Storage;
         }
         return *this;
     }
