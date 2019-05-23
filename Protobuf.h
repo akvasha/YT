@@ -35,27 +35,34 @@ folly::Future<TSharedPtr<Message>> Deserialize(std::string &message) {
 
 template <typename Message>
 void processMessageType(Message msg, int workers, int executions) {
-    std::chrono::time_point<std::chrono::system_clock> stime, etime;
-    stime = std::chrono::system_clock::now();
+    std::chrono::time_point<std::chrono::system_clock> stime_serialize, etime_serialize;
+    std::chrono::time_point<std::chrono::system_clock> stime_deserialize, etime_deserialize;
     auto executor = folly::CPUThreadPoolExecutor(workers);
     auto ptr = MakeShared<Message>(msg);
     std::vector<folly::Future<std::string>> futs;
+    stime_serialize = std::chrono::system_clock::now();
     for (int i = 0; i < executions; ++i) {
         futs.emplace_back(folly::via(&executor, [ptr]() {
             return Serialize(ptr);
         }));
     }
     folly::Future<std::vector<std::string>> resultSerialization = folly::collect(futs).get();
+    etime_serialize = std::chrono::system_clock::now();
+    double serialize_time = static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(etime_serialize - stime_serialize).count()) / 1000; //counted in seconds
+    std::cout << "Serialization of " << executions << " messages done in " << serialize_time << "." << std::endl;
+    std::cout << "Average bandwidth is " << executions / serialize_time << " msg/sec." << std::endl;
     std::vector<folly::Future<TSharedPtr<Message>>> output;
+    stime_deserialize = std::chrono::system_clock::now();
     for (int i = 0; i < executions; ++i) {
         output.emplace_back(folly::via(&executor, [&resultSerialization, i]() {
             return Deserialize<Message>(resultSerialization.value()[i]);
         }));
     }
     folly::Future<std::vector<TSharedPtr<Message>>> resultDeserialization = folly::collect(output).get();
-    etime = std::chrono::system_clock::now();
-    double execution_time = static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(etime - stime).count()) / 1000; //counted in seconds
-    std::cout << execution_time << std::endl;
+    etime_deserialize = std::chrono::system_clock::now();
+    double deserialize_time = static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(etime_deserialize - stime_deserialize).count()) / 1000; //counted in seconds
+    std::cout << "Deserialization of " << executions << " messages done in " << deserialize_time << std::endl;
+    std::cout << "Average bandwidth is " << executions / deserialize_time << " msg/sec." << std::endl;
 }
 
 std::string createString() {
