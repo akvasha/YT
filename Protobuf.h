@@ -83,6 +83,18 @@ auto createMessages() {
     std::get<0>(messages) = msg1;
 
     Message2 msg2;
+    auto submsg1 = msg2.mutable_submsg1();
+    submsg1->set_s1(createString());
+    submsg1->set_s2(createString());
+    submsg1->set_s3(createString());
+    submsg1->set_s4(createString());
+    submsg1->set_s5(createString());
+    auto submsg2 = msg2.mutable_submsg2();
+    submsg2->set_int1(rnd() % LLONG_MAX);
+    submsg2->set_int2(rnd() % LLONG_MAX);
+    submsg2->set_int3(rnd() % LLONG_MAX);
+    submsg2->set_int4(rnd() % LLONG_MAX);
+    submsg2->set_int5(rnd() % LLONG_MAX);
     std::get<1>(messages) = msg2;
 
     Message3 msg3;

@@ -28,6 +28,8 @@ message Message2 {
         int64 int4 = 9;
         int64 int5 = 10;
     }
+    SubMessage1 submsg1 = 1;
+    SubMessage2 submsg2 = 2;
 }
 
 message Message3 {
