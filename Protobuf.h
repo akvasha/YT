@@ -73,9 +73,7 @@ std::string createString() {
     return result;
 }
 
-auto createMessages() {
-    std::tuple<Message1, Message2, Message3, Message4> messages;
-
+auto createMessage1() {
     Message1 msg1;
     msg1.set_s1(createString());
     msg1.set_s2(createString());
@@ -87,8 +85,10 @@ auto createMessages() {
     msg1.set_int3(rnd() % LLONG_MAX);
     msg1.set_int4(rnd() % LLONG_MAX);
     msg1.set_int5(rnd() % LLONG_MAX);
-    std::get<0>(messages) = msg1;
+    return msg1;
+}
 
+auto createMessage2() {
     Message2 msg2;
     auto submsg1 = msg2.mutable_submsg1();
     submsg1->set_s1(createString());
@@ -102,42 +102,43 @@ auto createMessages() {
     submsg2->set_int3(rnd() % LLONG_MAX);
     submsg2->set_int4(rnd() % LLONG_MAX);
     submsg2->set_int5(rnd() % LLONG_MAX);
-    std::get<1>(messages) = msg2;
+    return msg2;
+}
 
+auto createMessage3() {
     Message3 msg3;
     for (int i = 0; i < 5; ++i) {
         msg3.add_str(createString());
         msg3.add_int_val(rnd() % LLONG_MAX);
     }
-    std::get<2>(messages) = msg3;
+    return msg3;
+}
 
+auto createMessage4() {
     Message4 msg4;
     for (int i = 0; i < 10; ++i) {
         SubMessage *subMsg = msg4.add_submsg();
         subMsg->set_str(createString());
         subMsg->set_int_val(rnd() % LLONG_MAX);
     }
-    std::get<3>(messages) = msg4;
-    return messages;
+    return msg4;
 }
 
 void processMain(int messageType, int workers, int executions) {
-    auto messages = createMessages();
-    switch (messageType) {
-        case 0:
-            processMessageType(std::get<0>(messages), workers, executions);
-            break;
-        case 1:
-            processMessageType(std::get<1>(messages), workers, executions);
-            break;
-        case 2:
-            processMessageType(std::get<2>(messages), workers, executions);
-            break;
-        case 3:
-            processMessageType(std::get<3>(messages), workers, executions);
-            break;
-        default:
-            break;
+    if (messageType == 0) {
+        auto message1 = createMessage1();
+        processMessageType(message1, workers, executions);
+    } else if (messageType == 1) {
+        auto message2 = createMessage2();
+        processMessageType(message2, workers, executions);
+    } else if (messageType == 2) {
+        auto message3 = createMessage3();
+        processMessageType(message3, workers, executions);
+    } else if (messageType == 3) {
+        auto message4 = createMessage4();
+        processMessageType(message4, workers, executions);
+    } else {
+        std::cout << "Incorrect message type" << std::endl;
     }
 }
 
